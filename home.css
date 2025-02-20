@@ -1,0 +1,105 @@
+body{
+
+    background-color: rgb(255, 255, 255);
+
+}
+
+h1{
+
+    text-align: center;
+
+     color:rgb(0, 0, 0) ;
+
+}
+
+
+
+p{
+
+    font-family:sans-serif ;
+
+    text-align: center;
+
+     color:rgb(0, 0, 0) ;
+
+}
+
+
+
+.grid-container {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 20px;
+
+    padding: 20px;
+
+    align-items: stretch;
+
+}
+
+
+
+.grid-item {
+
+    background-color: #fff; 
+
+    color: #000000; 
+
+    padding: 20px;
+
+    text-align: center;
+
+    border-radius: 15px;
+
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+
+}
+
+
+
+.navbar ul{
+
+    list-style-type: none;
+
+    background-color: #000000;
+
+    padding:0%;
+
+    margin: 0%;
+
+    overflow: hidden;
+
+}
+
+
+
+.navbar a{
+
+    color:rgb(243, 243, 243);
+
+    text-decoration: none;
+
+    padding: 15px;
+
+    display: block;
+
+}
+
+
+
+.navbar a:hover{
+
+    background-color: #2980b9;
+
+}
+
+
+
+.navbar li{
+
+    float: left ;
+
+}
