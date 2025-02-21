@@ -15,7 +15,7 @@ $output = __DIR__ . '/report';
 $options = [
     'format' => ['pdf'],
     'locale' => 'en',
-    'params' => [],
+    'params' => ['receipt_id' => $_GET['id']],
     'db_connection' => [
         'driver' => 'mysql', //mysql, ....
         'username' => 'root',

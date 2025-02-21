@@ -3,6 +3,9 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_A4_Landscape" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="058f1d72-421b-4efd-a4b5-d9adde02c79b">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
+	<parameter name="receipt_id" class="java.lang.Integer">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
 	<queryString language="SQL">
 		<![CDATA[SELECT 
 receipts.id,
@@ -10,7 +13,8 @@ receipts.purchase_date,
 receipt_items.product_id,
 receipt_items.total_cost
 FROM receipt_items
-INNER JOIN receipts ON receipts.id = receipt_items.receipt_id]]>
+INNER JOIN receipts ON receipts.id = receipt_items.receipt_id
+WHERE receipts.id =  $P{receipt_id} ]]>
 	</queryString>
 	<field name="id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.name" value="id"/>

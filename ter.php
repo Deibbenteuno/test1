@@ -55,6 +55,7 @@ if ($result->num_rows > 0) {
         echo "<p><strong>Receipt ID:</strong> " . $receipt['id'] . "</p>";
         echo "<p><strong>Total Purchase Amount:</strong> $" . number_format($receipt['total_amount'], 2) . "</p>";
         echo "<p><strong>Date of Purchase:</strong> " . $receipt['purchase_date'] . "</p>";
+        echo '<a href="report.php?id='. $receipt['id'] . '" target="_blank">RECEIPT</a>';
 
         // Fetch items related to this receipt
         $receipt_id = $receipt['id'];
