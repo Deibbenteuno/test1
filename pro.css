@@ -296,3 +296,25 @@ table {
     float: left ;
 
 }
+
+.receipt-box { 
+    display: inline-block; 
+    padding: 10px 20px; 
+    font-size: 16px; 
+    font-weight: bold; color: #fff;
+    background-color: #007bff;  
+    text-decoration: none; 
+    border: 2px solid #0056b3; 
+    border-radius: 8px;  
+    transition: background-color 0.3s, transform 0.2s; 
+     }
+
+.receipt-box:hover { 
+    background-color: #0056b3;  
+    transform: translateY(-2px); 
+ }
+
+.receipt-box:active { 
+    transform: translateY(1px); 
+ }
+
