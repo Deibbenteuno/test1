@@ -14,7 +14,7 @@ receipt_items.product_id,
 receipt_items.total_cost
 FROM receipt_items
 INNER JOIN receipts ON receipts.id = receipt_items.receipt_id
-WHERE receipts.id =  $P{receipt_id} ]]>
+WHERE receipts.id =  $P{receipt_id}]]>
 	</queryString>
 	<field name="id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.name" value="id"/>
@@ -51,10 +51,10 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 		</band>
 	</title>
 	<columnHeader>
-		<band height="52" splitType="Stretch">
+		<band height="43" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<staticText>
-				<reportElement x="20" y="36" width="60" height="14" uuid="0aa9e0b3-9e4b-4e7f-8400-d129ab535955">
+				<reportElement x="20" y="21" width="60" height="14" uuid="0aa9e0b3-9e4b-4e7f-8400-d129ab535955">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="eaf312a6-a851-4703-813a-91570d5bb2e5"/>
 				</reportElement>
 				<textElement>
@@ -63,7 +63,7 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 				<text><![CDATA[total_amount]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="80" y="36" width="60" height="14" uuid="c2e8c0e1-ab99-48c3-9f15-2106a7933e9e">
+				<reportElement x="80" y="21" width="60" height="14" uuid="c2e8c0e1-ab99-48c3-9f15-2106a7933e9e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c83f4d61-b22f-441d-b20c-a2e9930141ff"/>
 				</reportElement>
 				<textElement>
@@ -72,7 +72,7 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 				<text><![CDATA[purchase_date]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="35" width="20" height="16" uuid="e7b3d96b-3e70-4b7a-b0d4-408a3f82aa0f">
+				<reportElement x="0" y="20" width="20" height="16" uuid="e7b3d96b-3e70-4b7a-b0d4-408a3f82aa0f">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="472e00d5-a086-4dd2-947d-b5436863e571"/>
 				</reportElement>
 				<textElement textAlignment="Left">
@@ -81,7 +81,7 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 				<text><![CDATA[ID]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="170" y="34" width="40" height="16" uuid="c792d827-6899-429b-b4ad-90c087fc56a4">
+				<reportElement x="170" y="20" width="40" height="16" uuid="c792d827-6899-429b-b4ad-90c087fc56a4">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="eaf312a6-a851-4703-813a-91570d5bb2e5"/>
 				</reportElement>
 				<textElement>
@@ -92,7 +92,7 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="25" splitType="Stretch">
+		<band height="21" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField pattern="₱ #,##0.00#;¤(-#,##0.00#)">
 				<reportElement x="20" y="-1" width="60" height="11" uuid="3d4bb23d-c566-4ff7-b58d-49c96c28bfa6">
@@ -115,7 +115,7 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 				<textFieldExpression><![CDATA[$F{purchase_date}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="-4" y="0" width="24" height="20" uuid="6e5ce6bd-1f17-469f-ad7d-ab45b80a1e4b">
+				<reportElement x="0" y="-4" width="20" height="22" uuid="6e5ce6bd-1f17-469f-ad7d-ab45b80a1e4b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="472e00d5-a086-4dd2-947d-b5436863e571"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -125,7 +125,7 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 				<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="151" y="-2" width="78" height="19" uuid="81666d62-edd5-4919-8220-52399cfa1174">
+				<reportElement x="151" y="-1" width="78" height="19" uuid="81666d62-edd5-4919-8220-52399cfa1174">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -137,11 +137,11 @@ WHERE receipts.id =  $P{receipt_id} ]]>
 		</band>
 	</detail>
 	<columnFooter>
-		<band height="34">
+		<band height="38">
 			<componentElement>
-				<reportElement x="65" y="4" width="78" height="28" uuid="fbcb280d-1f02-4d6c-8c5b-56c87c61150d"/>
+				<reportElement x="60" y="0" width="90" height="38" uuid="fbcb280d-1f02-4d6c-8c5b-56c87c61150d"/>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<jr:codeExpression><![CDATA[062102]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA["http://treasury03/login/report.php?id="+$F{id}]]></jr:codeExpression>
 				</jr:QRCode>
 			</componentElement>
 		</band>

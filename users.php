@@ -18,8 +18,8 @@ $all_products = $conn->query($sql);
 <h1>Tindahan</h1>
 <nav class="navbar">
         <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="users.php">Cart</a></li>
+            <li><a href="users.php">Home</a></li>
+            <li><a href="users1.php">Cart</a></li>
             <li><a href="ter.php">Receipt</a></li>
             <li><a href="logout.php">Log Out</a></li>
         </ul>

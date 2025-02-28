@@ -1,6 +1,11 @@
 <?php
 session_start(); // Start session for cart management
 
+// Reset total bill on page reload or after purchase
+if (!isset($_SESSION['total_bill'])) {
+    $_SESSION['total_bill'] = 0; // Initialize total bill if not already set
+}
+
 // Database connection
 $servername = "localhost";
 $username = "root";
@@ -107,6 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
 
                 // Clear cart after purchase
                 unset($_SESSION['cart']);
+                unset($_SESSION['total_bill']); // Reset total bill after purchase
 
                 // Redirect to the receipt page (ter.php) after purchase
                 header("Location: ter.php");
@@ -129,6 +135,11 @@ if (isset($_POST['remove_from_cart'])) {
 
     // Remove the product from the cart
     unset($_SESSION['cart'][$product_id]);
+
+    // Reset total bill to 0 if cart is empty
+    if (empty($_SESSION['cart'])) {
+        $_SESSION['total_bill'] = 0;
+    }
 
     // Provide feedback to the user
     echo "<p>Product removed from your cart!</p>";
@@ -158,6 +169,66 @@ if (isset($_POST['update_quantity'])) {
     }
 }
 
+// Barcode scanning logic (from yourinfo.php)
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['barcode'])) {
+    $barcode = trim($_POST['barcode']);
+
+    if ($barcode == "endcode") {
+        echo "<p>Shopping done</p>";
+    } else {
+        // Prepare SQL query to fetch product details from the database
+        $sql = "SELECT id, name, price, Stock FROM products WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+
+        // Check if the statement preparation was successful
+        if ($stmt === false) {
+            echo "<p>Error preparing query: " . $conn->error . "</p>";
+        } else {
+            // Bind the barcode (now using 'id') to the query
+            $stmt->bind_param("i", $barcode); // 'i' for integer, assuming 'id' is an integer
+            $stmt->execute();
+            $stmt->store_result();
+            $stmt->bind_result($id, $name, $price, $stock);
+
+            if ($stmt->num_rows > 0) {
+                // Item found, display details
+                $stmt->fetch();
+                echo "<p>This is: $name, price is: $price</p>";
+
+                // Check if stock is available to add to the cart
+                if ($stock > 0) {
+                    // Add the product to the cart (session)
+                    if (isset($_SESSION['cart'][$id])) {
+                        // If already in the cart, increase the quantity
+                        $_SESSION['cart'][$id]['Stock'] += 1;
+                    } else {
+                        // Add new product to the cart
+                        $_SESSION['cart'][$id] = ['Stock' => 1];
+                    }
+
+                    // Reduce the stock in the database
+                    $new_stock = $stock - 1;
+                    $sql_update = "UPDATE products SET Stock = $new_stock WHERE id = $id";
+                    if ($conn->query($sql_update) === TRUE) {
+                        echo "<p>Product added to cart, stock decreased by 1.</p>";
+                    } else {
+                        echo "<p>Error updating stock: " . $conn->error . "</p>";
+                    }
+                } else {
+                    echo "<p>Sorry, the product is out of stock.</p>";
+                }
+
+                // Update the total bill stored in the session
+                $_SESSION['total_bill'] += $price;
+            } else {
+                echo "<p>Item not found with barcode: $barcode</p>";
+            }
+
+            $stmt->close();
+        }
+    }
+}
+
 // Fetch products from the database
 $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
@@ -170,131 +241,114 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="pro.css">
     <title>Inventory Management</title>
-    <!-- Include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // When quantity changes, send the updated quantity to the server using AJAX
-            $(".quantity-input").on("change", function() {
-                var productId = $(this).data("product-id");
-                var newQuantity = $(this).val();
-
-                // Send updated quantity via AJAX
-                $.ajax({
-                    url: "users1.php", // Current file to handle the request
-                    type: "POST",
-                    data: {
-                        update_quantity: true,
-                        product_id: productId,
-                        quantity: newQuantity
-                    },
-                    success: function(response) {
-                        alert("Quantity updated!");
-                    },
-                    error: function() {
-                        alert("Error updating quantity.");
-                    }
-                });
-            });
-        });
-    </script>
 </head>
 <body>
-    <!-- Navigation Bar with Cart Icon -->
-    <nav class="navbar">
-    <ul>
-        <li><a href="users.php">Home</a></li>
-        <li><a href="users1.php">Cart</a></li> 
-        <li><a href="ter.php">Receipt</a></li> 
-            <?php
-            // Check if the cart session is set and if it contains items
-            if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-                // Count the total items in the cart
-                $total_items = count($_SESSION['cart']); // Just count how many different products are in the cart
-                echo "($total_items)"; // Display the count inside parentheses
-            }
-            ?>
-        </a></li>
-        <li><a href="logout.php">Log Out</a></li>
-    </ul>
-    </nav>
+<nav class="navbar">
+        <ul>
+            <li><a href="users.php">Home</a></li>
+            <li><a href="users1.php">Cart</a></li>
+            <li><a href="ter.php">Receipt</a></li>
+            <li><a href="logout.php">Log Out</a></li>
+        </ul>
+</nav>  
 
-    <!-- Product List and Cart Section -->
-    <h1>Product List</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Cart</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                    echo "<td>" . $row['id'] . "</td>";
-                    echo "<td>" . $row['name'] . "</td>";
-                    echo "<td>" . number_format($row['price'], 2) . "</td>";
-                    echo "<td>" . $row['Stock'] . "</td>"; // Display stock available for the product
-                    echo "<td>
-                            <form action='users1.php' method='POST'>
-                                <input type='hidden' name='product_id' value='" . $row['id'] . "'>
-                                <button type='submit' name='add_to_cart'>Add to Cart</button>
-                            </form>
-                          </td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='5'>No products found</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
 
-    <!-- Your Cart Section -->
-    <h2>Your Cart</h2>
-    <?php
-    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-        echo "<table border='1'>";
-        echo "<thead><tr><th>Product Name</th><th>Stock</th><th>Quantity</th><th>Action</th></tr></thead>";
-        echo "<tbody>";
+<script>
+    window.onload = function() {
+        document.getElementById('barcode').focus();
+    }
+</script>
+<!-- Barcode Scanning Form -->
+<form action="" method="POST">
+    <label for="barcode">Scan your barcode:</label>
+    <input type="text" name="barcode" id="barcode" required>
+    <button type="submit">Submit</button>
+</form>
 
-        foreach ($_SESSION['cart'] as $product_id => $cart_item) {
-            // Get product details
-            $sql = "SELECT * FROM products WHERE id = $product_id";
-            $result = $conn->query($sql);
-            if ($result->num_rows > 0) {
-                $product = $result->fetch_assoc(); // Fetch the product details from the database
-
+<!-- Product List and Cart Section -->
+<h1>Product List</h1>
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Cart</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
                 echo "<tr>";
-                echo "<td>" . $product['name'] . "</td>";
-                echo "<td>" . $product['Stock'] . "</td>"; // Display stock available for the product
-                echo "<td>
-                        <input type='number' class='quantity-input' data-product-id='" . $product['id'] . "' value='" . $cart_item['Stock'] . "' min='1' max='" . $product['Stock'] . "'>
-                      </td>";
+                echo "<td>" . $row['id'] . "</td>";
+                echo "<td>" . $row['name'] . "</td>";
+                echo "<td>" . number_format($row['price'], 2) . "</td>";
+                echo "<td>" . $row['Stock'] . "</td>";
                 echo "<td>
                         <form action='users1.php' method='POST'>
-                            <input type='hidden' name='product_id' value='" . $product['id'] . "'>
-                            <button type='submit' name='remove_from_cart'>Remove</button>
+                            <input type='hidden' name='product_id' value='" . $row['id'] . "'>
+                            <button type='submit' name='add_to_cart'>Add to Cart</button>
                         </form>
                       </td>";
                 echo "</tr>";
             }
+        } else {
+            echo "<tr><td colspan='5'>No products found</td></tr>";
         }
+        ?>
+    </tbody>
+</table>
 
-        echo "</tbody></table>";
-        echo "<form action='users1.php' method='POST'><button type='submit' name='purchase_product'>Complete Purchase</button></form>";
-    } else {
-        echo "<p>Your cart is empty.</p>";
+
+
+<!-- Your Cart Section -->
+<h2>Your Cart</h2>
+<?php
+if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+    echo "<table border='1'>";
+    echo "<thead><tr><th>Product Name</th><th>Stock</th><th>Quantity</th><th>Action</th></tr></thead>";
+    echo "<tbody>";
+
+    foreach ($_SESSION['cart'] as $product_id => $cart_item) {
+        // Get product details
+        $sql = "SELECT * FROM products WHERE id = $product_id";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            $product = $result->fetch_assoc(); // Fetch the product details from the database
+
+            echo "<tr>";
+            echo "<td>" . $product['name'] . "</td>";
+            echo "<td>" . $product['Stock'] . "</td>"; // Display stock available for the product
+            echo "<td>
+                    <input type='number' class='quantity-input' data-product-id='" . $product['id'] . "' value='" . $cart_item['Stock'] . "' min='1' max='" . $product['Stock'] . "'>
+                  </td>";
+            echo "<td>
+                    <form action='users1.php' method='POST'>
+                        <input type='hidden' name='product_id' value='" . $product['id'] . "'>
+                        <button type='submit' name='remove_from_cart'>Remove</button>
+                    </form>
+                  </td>";
+            echo "</tr>";
+        }
     }
-    ?>
+    
+    
+
+    echo "</tbody></table>";
+    echo "<form action='users1.php' method='POST'><button type='submit' name='purchase_product'>Complete Purchase</button></form>";
+} else {
+    echo "<p>Your cart is empty.</p>";
+}
+
+?>
+
+
+
 </body>
 </html>
-
+<p>Your total bill is: <?php echo $_SESSION['total_bill']; ?></p>
 <?php
 // Close database connection
 $conn->close();

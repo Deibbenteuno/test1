@@ -50,7 +50,9 @@ $result = $conn->query($sql);
             <tr>
                 <th>ID</th>
                 <th>User Name</th>
+                <th>Usertype</th>
                 <th>Password</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -61,6 +63,7 @@ $result = $conn->query($sql);
                     echo "<tr>";
                     echo "<td>" . $row['id'] . "</td>";
                     echo "<td>" . $row['username'] . "</td>";
+                    echo "<td>" . $row['usertype'] . "</td>";
                     // Don't display the real password, show a placeholder
                     echo "<td>******</td>";
                     echo "</tr>";

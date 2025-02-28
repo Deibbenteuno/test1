@@ -10,12 +10,17 @@ use PHPJasper\PHPJasper;
 // $jasper->compile($input)->execute();
 
 
-$input = __DIR__ . '/report/finaltest.jrxml';   
+$input = __DIR__ . '/report/Final.jrxml';   
 $output = __DIR__ . '/report';
 $options = [
     'format' => ['pdf'],
     'locale' => 'en',
-    'params' => ['receipt_id' => $_GET['id']],
+    'params' => [
+        'Staff' => 'Harold',
+        'Customer' => 'Vivo',
+        'Barcode' => '',
+        'receipt_id' => $_GET['id']
+    ],
     'db_connection' => [
         'driver' => 'mysql', //mysql, ....
         'username' => 'root',
@@ -37,4 +42,4 @@ header('Content-Transfer-Encoding: binary');
 header('Accept-Ranges: bytes');
 
 // Read the file
-@readfile(__DIR__ . '/report/finaltest.pdf');
+@readfile(__DIR__ . '/report/Final.pdf');

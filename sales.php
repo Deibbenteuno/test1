@@ -64,7 +64,7 @@ function formatProductId($productId) {
 <nav class="navbar">
     <ul>
         <li><a href="ho.php">Home</a></li>
-        <li><a href="#.php">User_info</a></li>
+        <li><a href="userinfo.php">User Info</a></li>
         <li><a href="product.php">Product</a></li>
         <li><a href="sales.php">Sales</a></li>
         <li><a href="about.php">About</a></li>
@@ -110,7 +110,7 @@ function formatProductId($productId) {
             echo "<td>".$row['stock']."</td>";
             echo "<td>".$row['price']."</td>";
             echo "<td>".$row['quantity_sold']."</td>";
-            echo "<td> P ".number_format($totalSalesAmount, 2)."</td>"; // Display the calculated total sales amount
+            echo "<td> ₱ ".number_format($totalSalesAmount, 2)."</td>"; // Display the calculated total sales amount
             // Embed the barcode HTML
             echo "<td>".$barcodeHtml."</td>";
             echo "</tr>";

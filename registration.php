@@ -14,12 +14,10 @@ if (isset($_POST["submit"])) {
     $usertype = $_POST["usertype"];
     $errors = array();
 
-
     if (empty($username) || empty($password)) {
         array_push($errors, "Username and Password cannot be empty.");
     }
 
-    
     $sql = "SELECT * FROM user WHERE username = ?";
     $stmt = mysqli_stmt_init($conn);
 
@@ -34,23 +32,21 @@ if (isset($_POST["submit"])) {
         }
     }
 
-    
     if (count($errors) > 0) {
         foreach ($errors as $error) {
             echo "<div class='alert alert-danger'>$error</div>";
         }
     } else {
-        
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        
         $sql = "INSERT INTO user (username, password, usertype) VALUES (?, ?, ?)";
         $stmt = mysqli_stmt_init($conn);
 
         if (mysqli_stmt_prepare($stmt, $sql)) {
             mysqli_stmt_bind_param($stmt, "sss", $username, $hashed_password, $usertype);
             mysqli_stmt_execute($stmt);
-            echo "<div class='alert alert-success'>You are registered successfully.</div>";
+            // Display success message at the top
+            $successMessage = "<div class='alert alert-success'>You are registered successfully.</div>";
         } else {
             die("Something went wrong.");
         }
@@ -68,6 +64,13 @@ if (isset($_POST["submit"])) {
 </head>
 <body>
     <div class="container">
+        <!-- Display success message at the top if set -->
+        <?php
+        if (isset($successMessage)) {
+            echo $successMessage;
+        }
+        ?>
+
         <form action="registration.php" method="post">
             <h2>Registration Form</h2>
 

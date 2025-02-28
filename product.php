@@ -114,10 +114,10 @@ $result = $conn->query($sql);
 <nav class="navbar">
         <ul>
             <li><a href="ho.php">Home</a></li>
-            <li><a href="userinfo.php">User_info</a></li>
+            <li><a href="userinfo.php">User Info</a></li>
             <li><a href="product.php">Product</a></li>
             <li><a href="sales.php">Sales</a></li>
-            <li><a href="about.php">About</a></li>
+            <li><a href="#">About</a></li>
             <li><a href="logout.php">Log Out</a></li>
         </ul>
     </nav>
@@ -163,7 +163,7 @@ $result = $conn->query($sql);
                 }
             } else {
                 echo "<tr><td colspan='6'>No products found</td></tr>";
-            }
+            }0
             ?>
         </tbody>
     </table>
