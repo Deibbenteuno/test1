@@ -1,11 +1,6 @@
 <?php
 session_start(); // Start session for cart management
 
-// Reset total bill on page reload or after purchase
-if (!isset($_SESSION['total_bill'])) {
-    $_SESSION['total_bill'] = 0; // Initialize total bill if not already set
-}
-
 // Database connection
 $servername = "localhost";
 $username = "root";
@@ -19,13 +14,83 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Handle add to cart
+if (isset($_POST['add_to_cart'])) {
+    $product_id = $_POST['product_id'];
+    
+    // Check if the cart is already initialized
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+
+    // Get product details from the database
+    $sql = "SELECT * FROM products WHERE id = $product_id";
+    $result = $conn->query($sql);
+    if ($result->num_rows > 0) {
+        $product = $result->fetch_assoc();
+
+        // Check if the product is already in the cart
+        if (isset($_SESSION['cart'][$product_id])) {
+            // Increase quantity if already in cart
+            $_SESSION['cart'][$product_id]['Stock']++;
+        } else {
+            // Add new product to the cart
+            $_SESSION['cart'][$product_id] = [
+                'name' => $product['name'],
+                'price' => $product['price'],
+                'Stock' => 1 // Default quantity 1 when adding to cart
+            ];
+        }
+    }
+
+    // Update total bill
+    $_SESSION['total_bill'] = calculateTotalBill();
+
+    // Redirect to avoid form resubmission on refresh
+    header("Location: users1_display.php");
+    exit();
+}
+
+// Handle removal from cart
+if (isset($_POST['remove_from_cart'])) {
+    $product_id = $_POST['product_id'];
+
+    // Remove product from session cart
+    if (isset($_SESSION['cart'][$product_id])) {
+        unset($_SESSION['cart'][$product_id]);
+    }
+
+    // Optionally update the total bill after removal
+    $_SESSION['total_bill'] = calculateTotalBill();
+
+    // Redirect to avoid form resubmission on refresh
+    header("Location: users1_display.php");
+    exit();
+}
+
+// Function to calculate the total bill
+function calculateTotalBill() {
+    global $conn;
+    $total = 0;
+
+    // Loop through the cart to calculate the total
+    foreach ($_SESSION['cart'] as $product_id => $cart_item) {
+        // Get product price from the database
+        $sql = "SELECT price FROM products WHERE id = $product_id";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            $product = $result->fetch_assoc();
+            $total += $product['price'] * $cart_item['Stock'];
+        }
+    }
+
+    return $total;
+}
+
+// Fetch products for displaying on the page
 $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
-
 ?>
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,20 +101,20 @@ $result = $conn->query($sql);
 </head>
 <body>
 <nav class="navbar">
-        <ul>
-            <li><a href="users.php">Home</a></li>
-            <li><a href="users1_display.php">Cart</a></li>
-            <li><a href="ter.php">Receipt</a></li>
-            <li><a href="logout.php">Log Out</a></li>
-        </ul>
+    <ul>
+        <li><a href="users.php">Home</a></li>
+        <li><a href="users1_display.php">Cart</a></li>
+        <li><a href="ter.php">Receipt</a></li>
+        <li><a href="logout.php">Log Out</a></li>
+    </ul>
 </nav>  
-
 
 <script>
     window.onload = function() {
         document.getElementById('barcode').focus();
     }
 </script>
+
 <!-- Barcode Scanning Form -->
 <form action="" method="POST">
     <label for="barcode">Scan your barcode:</label>
@@ -79,7 +144,7 @@ $result = $conn->query($sql);
                 echo "<td>" . number_format($row['price'], 2) . "</td>";
                 echo "<td>" . $row['Stock'] . "</td>";
                 echo "<td>
-                        <form action='users1.php' method='POST'>
+                        <form action='users1_display.php' method='POST'>
                             <input type='hidden' name='product_id' value='" . $row['id'] . "'>
                             <button type='submit' name='add_to_cart'>Add to Cart</button>
                         </form>
@@ -92,8 +157,6 @@ $result = $conn->query($sql);
         ?>
     </tbody>
 </table>
-
-
 
 <!-- Your Cart Section -->
 <h2>Your Cart</h2>
@@ -117,7 +180,7 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                     <input type='number' class='quantity-input' data-product-id='" . $product['id'] . "' value='" . $cart_item['Stock'] . "' min='1' max='" . $product['Stock'] . "'>
                   </td>";
             echo "<td>
-                    <form action='users1.php' method='POST'>
+                    <form action='users1_display.php' method='POST'>
                         <input type='hidden' name='product_id' value='" . $product['id'] . "'>
                         <button type='submit' name='remove_from_cart'>Remove</button>
                     </form>
@@ -125,23 +188,19 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
             echo "</tr>";
         }
     }
-    
-    
 
     echo "</tbody></table>";
-    echo "<form action='users1.php' method='POST'><button type='submit' name='purchase_product'>Complete Purchase</button></form>";
+    echo "<form action='users1_display.php' method='POST'><button type='submit' name='purchase_product'>Complete Purchase</button></form>";
 } else {
     echo "<p>Your cart is empty.</p>";
 }
-
 ?>
 
+<p>Your total bill is: <?php echo number_format($_SESSION['total_bill'], 0); ?></p>
 
-
-</body>
-</html>
-<p>Your total bill is: <?php echo $_SESSION['total_bill']; ?></p>
 <?php
 // Close database connection
 $conn->close();
 ?>
+</body>
+</html>
