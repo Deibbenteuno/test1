@@ -318,3 +318,18 @@ table {
     transform: translateY(1px); 
  }
 
+ /* Styling for the Total Bill */
+.total-bill {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;  /* Blue background */
+    border: 2px solid #000000;  /* Darker blue border */
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+
+}
+

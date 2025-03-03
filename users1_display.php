@@ -196,7 +196,14 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
 }
 ?>
 
-<p>Your total bill is: <?php echo number_format($_SESSION['total_bill'], 0); ?></p>
+<?php
+
+if (isset($_SESSION['total_bill']) && $_SESSION['total_bill']  != 0) {
+    echo '<p>Your total bill is: ' . number_format(isset($_SESSION['total_bill']) ? $_SESSION['total_bill'] : 0, 0) . '</p>';
+}
+
+?>
+
 
 <?php
 // Close database connection
