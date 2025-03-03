@@ -38,6 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_product'])) {
 if (isset($_POST['add_to_cart'])) {
     $product_id = $_POST['product_id'];
 
+    // Query to get the price of the product from the database
+    $sql = "SELECT price FROM products WHERE id = $product_id";
+    $result = $conn->query($sql);
+    $product = $result->fetch_assoc();
+
     // Check if the product is already in the cart
     if (isset($_SESSION['cart'][$product_id])) {
         // If the product is already in the cart, just increase the quantity by 1
@@ -47,7 +52,15 @@ if (isset($_POST['add_to_cart'])) {
         $_SESSION['cart'][$product_id] = ['Stock' => 1];
     }
 
+    // Update the total bill (total_bill = total_bill + product price)
+    $_SESSION['total_bill'] += $product['price'];
+
+    // Optionally provide feedback to the user
     echo "<p>Product added to cart!</p>";
+
+    // Redirect to the users1_display.php page
+    header("Location: users1_display.php");
+    exit(); // Ensure no further code is executed after the redirection
 }
 
 // Handle purchase (simplified)
@@ -133,12 +146,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
 if (isset($_POST['remove_from_cart'])) {
     $product_id = $_POST['product_id'];
 
+    // Get product price from the database
+    $sql = "SELECT price FROM products WHERE id = $product_id";
+    $result = $conn->query($sql);
+    $product = $result->fetch_assoc();
+
     // Remove the product from the cart
     unset($_SESSION['cart'][$product_id]);
 
     // Reset total bill to 0 if cart is empty
     if (empty($_SESSION['cart'])) {
         $_SESSION['total_bill'] = 0;
+    } else {
+        // Update the total bill after removal (subtract the price of the removed item)
+        $_SESSION['total_bill'] -= $product['price'];
     }
 
     // Provide feedback to the user
@@ -161,7 +182,13 @@ if (isset($_POST['update_quantity'])) {
         $product = $result->fetch_assoc();
         if ($new_quantity <= $product['Stock'] && $new_quantity > 0) {
             // Update the quantity in the session cart
+            $old_quantity = $_SESSION['cart'][$product_id]['Stock'];
             $_SESSION['cart'][$product_id]['Stock'] = $new_quantity;
+
+            // Update total bill based on the change in quantity
+            $difference_in_quantity = $new_quantity - $old_quantity;
+            $_SESSION['total_bill'] += $difference_in_quantity * $product['price'];
+
             echo "<p>Quantity updated!</p>";
         } else {
             echo "<p>Invalid quantity. Please check the stock availability.</p>";
@@ -233,7 +260,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['barcode'])) {
 $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
 ?>
-
 
 <?php
 // Close database connection
