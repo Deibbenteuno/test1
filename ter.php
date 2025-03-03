@@ -11,7 +11,7 @@
 <nav class="navbar">
         <ul>
             <li><a href="users.php">Home</a></li>
-            <li><a href="users1.php">Cart</a></li>
+            <li><a href="users1_display.php">Cart</a></li>
             <li><a href="ter.php">Receipt</a></li>
             <li><a href="logout.php">Log Out</a></li>
             

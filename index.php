@@ -37,7 +37,7 @@
         
 
         <div class="link">
-            <a href="registration.php">Sign here</a>
+            <a href="registration_display.php">Sign here</a>
         </div>
             </form>
     </body>

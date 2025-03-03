@@ -19,7 +19,7 @@ $all_products = $conn->query($sql);
 <nav class="navbar">
         <ul>
             <li><a href="users.php">Home</a></li>
-            <li><a href="users1.php">Cart</a></li>
+            <li><a href="users1_display.php">Cart</a></li>
             <li><a href="ter.php">Receipt</a></li>
             <li><a href="logout.php">Log Out</a></li>
         </ul>
@@ -29,6 +29,7 @@ $all_products = $conn->query($sql);
     <?php
     while($row = mysqli_fetch_assoc($all_products)){
     ?>
+    
     <div class="card">
         <div class="image">
             <img src="<?php echo $row["image_path"]; ?> ">

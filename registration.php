@@ -8,6 +8,8 @@ if (isset($_SESSION["user"])) {
 
 require_once "db_conn.php";
 
+$successMessage = ""; // Initialize success message variable
+
 if (isset($_POST["submit"])) {
     $username = $_POST["user_name"];
     $password = $_POST["password"];
@@ -33,9 +35,7 @@ if (isset($_POST["submit"])) {
     }
 
     if (count($errors) > 0) {
-        foreach ($errors as $error) {
-            echo "<div class='alert alert-danger'>$error</div>";
-        }
+        $_SESSION['errors'] = $errors;
     } else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
@@ -45,56 +45,15 @@ if (isset($_POST["submit"])) {
         if (mysqli_stmt_prepare($stmt, $sql)) {
             mysqli_stmt_bind_param($stmt, "sss", $username, $hashed_password, $usertype);
             mysqli_stmt_execute($stmt);
-            // Display success message at the top
-            $successMessage = "<div class='alert alert-success'>You are registered successfully.</div>";
+            $successMessage = "You are registered successfully.";
+            $_SESSION['successMessage'] = $successMessage;
         } else {
             die("Something went wrong.");
         }
     }
 }
+
+// Redirect to the registration form page after processing
+header("Location: registration_display.php");
+exit;
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <title>Registration Form</title>
-</head>
-<body>
-    <div class="container">
-        <!-- Display success message at the top if set -->
-        <?php
-        if (isset($successMessage)) {
-            echo $successMessage;
-        }
-        ?>
-
-        <form action="registration.php" method="post">
-            <h2>Registration Form</h2>
-
-            <div class="form-group">
-                <input type="text" class="form-control" name="user_name" placeholder="Username">
-            </div>
-
-            <div class="form-group">
-                <input type="password" class="form-control" name="password" placeholder="Password">
-            </div>
-
-            <select name="usertype">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-            </select>
-
-            <div class="form-btn">
-                <input type="submit" class="btn btn-primary" value="Register" name="submit">
-            </div>
-
-            <div class="link">
-                <a href="index.php">Login Here</a>
-            </div>
-        </form>
-    </div>
-</body>
-</html>
