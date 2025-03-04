@@ -1,5 +1,6 @@
 <?php
-// Database connection details
+session_start();
+
 $sname = "localhost";
 $uname = "root";
 $password = "";
@@ -11,7 +12,10 @@ $conn = new mysqli($sname, $uname, $password, $dbname);
 // Check if the connection is successful
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
+
+
 }
+
 
 // Include the Barcode library
 require_once 'vendor/autoload.php';  // Assuming you're using Composer for dependency management

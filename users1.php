@@ -6,6 +6,11 @@ if (!isset($_SESSION['total_bill'])) {
     $_SESSION['total_bill'] = 0; // Initialize total bill if not already set
 }
 
+if (isset($_SESSION['usertype'])) {
+    # code...
+    header("location:users1_display.php");
+}
+
 // Database connection
 $servername = "localhost";
 $username = "root";

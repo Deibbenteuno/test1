@@ -1,3 +1,10 @@
+<?php
+session_start();
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,6 +67,7 @@
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
         }
+        
 
         // Fetch product data
         $sql = "SELECT id, name, description, Stock, price FROM products";

@@ -1,6 +1,10 @@
 <?php
 session_start();
 include "db_conn.php"; 
+if (isset($_SESSION['username'])) {
+    # code...
+    header("location:ho.php");
+}
 
 // Function to sanitize input data
 function validate($data) {

@@ -1,6 +1,13 @@
 <?php
 session_start(); // Start session for cart management
 
+if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
+    # code...
+    header("location:index.php");
+}
+
+
+
 // Database connection
 $servername = "localhost";
 $username = "root";
@@ -197,12 +204,11 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
 ?>
 
 <?php
-
-if (isset($_SESSION['total_bill']) && $_SESSION['total_bill']  != 0) {
-    echo '<p>Your total bill is: ' . number_format(isset($_SESSION['total_bill']) ? $_SESSION['total_bill'] : 0, 0) . '</p>';
+if (isset($_SESSION['total_bill']) && $_SESSION['total_bill'] != 0) {
+    echo '<p class="total-bill">Your total bill is: ' . number_format(isset($_SESSION['total_bill']) ? $_SESSION['total_bill'] : 0, 0) . '</p>';
 }
-
 ?>
+
 
 
 <?php

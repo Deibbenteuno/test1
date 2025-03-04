@@ -16,6 +16,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+
+
 // SQL query to fetch user info
 $sql = "SELECT * FROM user";
 $result = $conn->query($sql);
