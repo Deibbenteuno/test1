@@ -1,4 +1,15 @@
 <?php
+session_start();
+
+if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
+    # code...
+    header("location:index.php");
+}
+?>
+
+
+
+<?php
 require_once 'db_conn.php';
 $sql = "SELECT * FROM products";
 $all_products = $conn->query($sql);

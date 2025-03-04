@@ -1,7 +1,7 @@
 <?php
 session_start(); // Start session for cart management
 
-if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
+if (  isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
     # code...
     header("location:index.php");
 }

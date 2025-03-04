@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
+    # code...
+    header("location:index.php");
+}
+
+
 ?>
 
 

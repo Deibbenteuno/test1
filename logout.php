@@ -2,7 +2,7 @@
 
 session_start();
 
-if (isset($_SESSION['usertype'])) {
+if (isset($_SESSION['username'])) {
     // Destroy all session variables
     session_unset();
 

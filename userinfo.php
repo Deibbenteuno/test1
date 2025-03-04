@@ -1,6 +1,11 @@
 <?php
 // Start the session to manage user login status
 session_start();
+if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
+    # code...
+    header("location:index.php");
+}
+
 
 // Database credentials
 $servername = "localhost";

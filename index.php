@@ -1,9 +1,17 @@
 <?php
 session_start();
-if (isset($_SESSION['username'])) {
-    # code...
-    header("location:ho.php");
+
+switch (@$_SESSION['usertype']) {
+    case 'admin':
+        header('location: ho.php');
+        break;
+    case 'user':
+        header('location: users.php');
+    default:
+        
+        break;
 }
+
 ?>
 
 <!DOCTYPE html>

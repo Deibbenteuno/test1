@@ -3,11 +3,14 @@ session_start(); // Start the session
 
 if ( ! isset($_SESSION['username'])) {
     # code...
-    header("location:index.php");
+    header("location: index.php");
+    exit();
 }
  
- 
- 
+ if ($_SESSION['usertype'] == 'user') {
+    header('location: index.php');
+    exit();
+ }
  
 // Check if the user is logged in by checking session variables
 if (isset($_SESSION['id']) && isset($_SESSION['username'])) {

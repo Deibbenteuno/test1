@@ -27,7 +27,10 @@
 
 <?php
 session_start();
-
+if (  isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
+    # code...
+    header("location:index.php");
+}
 // Database connection
 $servername = "localhost";
 $username = "root";
