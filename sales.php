@@ -76,6 +76,7 @@ function formatProductId($productId) {
             <li><a href="product_display.php">Product</a></li>
             <li><a href="price_checking.php">Price Checking</a></li>
             <li><a href="Barcode_purchase.php">Barcode purchase</a></li>
+            <li><a href="ter.php">Receipt</a></li>
             <li><a href="sales.php">Sales</a></li>
             <li><a href="logout.php">Log Out</a></li>
         </ul>

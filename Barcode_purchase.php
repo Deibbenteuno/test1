@@ -155,28 +155,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
             unset($_SESSION['cart']);
             unset($_SESSION['total_bill']);
 
-            echo "<p>Purchase successful!</p>";
-
-            // After successful purchase, redirect to `ter.php` if the user is an admin
-            $sql_user = "SELECT usertype FROM user WHERE id = ?";
-            $stmt_user = $conn->prepare($sql_user);
-            $stmt_user->bind_param("i", $user_id);
-            $stmt_user->execute();
-            $result_user = $stmt_user->get_result();
-
-            if ($result_user->num_rows > 0) {
-                $user = $result_user->fetch_assoc();
-                if ($user['usertype'] == 'admin') {
-                    // Redirect to `ter.php` if the user is an admin
-                    header("Location: ter.php");
-                    exit();
-                } else {
-                    // Optionally redirect to a different page if the user is not an admin
-                    header("Location: user_dashboard.php"); // Change to your desired page
-                    exit();
-                }
+            // Check if the user is admin
+            if ($_SESSION['usertype'] == 'admin') {
+                // Redirect to ter.php directly
+                header("Location: ter.php");
+                exit();
+            } else {
+                // Redirect to another page if the user is not admin (optional, you can handle this as needed)
+                echo "<p>You don't have access to this page. Redirecting to homepage...</p>";
+                header("Location: ho.php");
+                exit();
             }
-
         } catch (Exception $e) {
             // Rollback the transaction in case of an error
             $conn->rollback();
@@ -204,6 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         <li><a href="product_display.php">Product</a></li>
         <li><a href="price_checking.php">Price Checking</a></li>
         <li><a href="Barcode_purchase.php">Barcode Purchase</a></li>
+        <li><a href="ter.php">Receipt</a></li>
         <li><a href="sales.php">Sales</a></li>
         <li><a href="#">About</a></li>
         <li><a href="logout.php">Log Out</a></li>
