@@ -19,7 +19,7 @@ receipt_items.total_cost as price
 FROM receipt_items
 INNER JOIN receipts ON receipts.id = receipt_items.receipt_id
 INNER JOIN products ON receipt_items.product_id = products.id
-WHERE receipts.id =   $P{receipt_id}; ]]>
+WHERE receipts.id =   $P{receipt_id};]]>
 	</queryString>
 	<field name="r_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.name" value="id"/>

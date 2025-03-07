@@ -1,12 +1,16 @@
 <?php
 session_start(); // Start session for cart management
 
-if (  isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
-    # code...
-    header("location:index.php");
+// Initialize the cart if not already initialized
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
 }
 
-
+// Check user type and redirect if admin
+if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
+    header("location:index.php");
+    exit();
+}
 
 // Database connection
 $servername = "localhost";
@@ -25,11 +29,6 @@ if ($conn->connect_error) {
 if (isset($_POST['add_to_cart'])) {
     $product_id = $_POST['product_id'];
     
-    // Check if the cart is already initialized
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-
     // Get product details from the database
     $sql = "SELECT * FROM products WHERE id = $product_id";
     $result = $conn->query($sql);
@@ -94,10 +93,71 @@ function calculateTotalBill() {
     return $total;
 }
 
+// Insert a new receipt into the database
+if (isset($_POST['purchase_product'])) {
+    $user_id = $_SESSION['id']; // Assuming user_id is stored in the session
+    $total_amount = $_SESSION['total_bill'];
+    $purchase_date = date('Y-m-d H:i:s'); // Current timestamp
+
+    // Insert receipt
+    $sql_receipt = "INSERT INTO receipts (user_id, total_amount, purchase_date) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql_receipt);
+    if ($stmt === false) {
+        die('Error preparing the receipt insert query: ' . $conn->error);
+    }
+    $stmt->bind_param("ids", $user_id, $total_amount, $purchase_date);
+    $stmt->execute();
+
+    // Get the last inserted receipt ID
+    $receipt_id = $stmt->insert_id;
+
+    // Insert cart items into the receipt_items table and update product stock
+    foreach ($_SESSION['cart'] as $product_id => $cart_item) {
+        $quantity = $cart_item['Stock'];
+        $price = $cart_item['price'];
+        $total_cost = $quantity * $price;
+
+        // First, check if enough stock is available
+        $sql_check_stock = "SELECT Stock FROM products WHERE id = ?";
+        $stmt_check_stock = $conn->prepare($sql_check_stock);
+        $stmt_check_stock->bind_param("i", $product_id);
+        $stmt_check_stock->execute();
+        $result = $stmt_check_stock->get_result();
+        $product = $result->fetch_assoc();
+
+        if ($product['Stock'] < $quantity) {
+            // If there's not enough stock, we should stop the purchase and show an error
+            echo "<p>Sorry, not enough stock for product: " . $cart_item['name'] . "</p>";
+            exit();
+        }
+
+        // Insert the product into receipt_items table
+        $sql_items = "INSERT INTO receipt_items (receipt_id, product_id, quantity, price, total_cost) VALUES (?, ?, ?, ?, ?)";
+        $stmt_items = $conn->prepare($sql_items);
+        $stmt_items->bind_param("iiidd", $receipt_id, $product_id, $quantity, $price, $total_cost);
+        $stmt_items->execute();
+
+        // Reduce product stock in the products table
+        $sql_update_stock = "UPDATE products SET Stock = Stock - ? WHERE id = ?";
+        $stmt_update_stock = $conn->prepare($sql_update_stock);
+        $stmt_update_stock->bind_param("ii", $quantity, $product_id);
+        $stmt_update_stock->execute();
+    }
+
+    // Clear the cart and reset total bill
+    unset($_SESSION['cart']);
+    $_SESSION['total_bill'] = 0;
+
+    // Redirect to view the receipt on ter.php
+    header("Location: ter.php");
+    exit();
+}
+
 // Fetch products for displaying on the page
 $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,19 +175,6 @@ $result = $conn->query($sql);
         <li><a href="logout.php">Log Out</a></li>
     </ul>
 </nav>  
-
-<script>
-    window.onload = function() {
-        document.getElementById('barcode').focus();
-    }
-</script>
-
-<!-- Barcode Scanning Form -->
-<form action="" method="POST">
-    <label for="barcode">Scan your barcode:</label>
-    <input type="text" name="barcode" id="barcode" required>
-    <button type="submit">Submit</button>
-</form>
 
 <!-- Product List and Cart Section -->
 <h1>Product List</h1>
@@ -201,15 +248,11 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
 } else {
     echo "<p>Your cart is empty.</p>";
 }
-?>
 
-<?php
 if (isset($_SESSION['total_bill']) && $_SESSION['total_bill'] != 0) {
-    echo '<p class="total-bill">Your total bill is: ' . number_format(isset($_SESSION['total_bill']) ? $_SESSION['total_bill'] : 0, 0) . '</p>';
+    echo '<p class="total-bill">Your Total Bill is: ₱' . number_format($_SESSION['total_bill'], 0) . '</p>';
 }
 ?>
-
-
 
 <?php
 // Close database connection

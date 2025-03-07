@@ -23,7 +23,7 @@ $all_products = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="uho.css">
-    <title>Document</title>
+    <title>Gaming Store</title>
 </head>
 <body>
 <h1>Tindahan</h1>
@@ -34,7 +34,7 @@ $all_products = $conn->query($sql);
             <li><a href="ter.php">Receipt</a></li>
             <li><a href="logout.php">Log Out</a></li>
         </ul>
-</nav>
+</nav> 
 
 <main>
     <?php

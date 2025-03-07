@@ -1,15 +1,51 @@
 <?php
 session_start();
 
+// Check if the user is logged in and has the correct user type
 if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
-    # code...
+    // Redirect to home page if the user is logged in as 'user'
     header("location:index.php");
+    exit();
 }
 
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "inventory"; // Adjust this to your actual database name
 
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the product ID is passed via the URL for deletion
+if (isset($_GET['id'])) {
+    // Sanitize the product ID to prevent SQL injection
+    $product_id = intval($_GET['id']);
+    
+    // Ensure the product ID is valid
+    if ($product_id > 0) {
+        // Delete the product from the database
+        $sql = "DELETE FROM products WHERE id = $product_id";
+        
+        if ($conn->query($sql) === TRUE) {
+            // Redirect back to the product list after successful deletion
+            header("Location: product_display.php");
+            exit();
+        } else {
+            echo "Error: " . $conn->error;
+        }
+    }
+}
+
+// Fetch product data
+$sql = "SELECT id, name, description, Stock, price FROM products";
+$result = $conn->query($sql);
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,9 +61,10 @@ if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
     <ul>
         <li><a href="ho.php">Home</a></li>
         <li><a href="userinfo.php">User Info</a></li>
-        <li><a href="product.php">Product</a></li>
+        <li><a href="product_display.php">Product</a></li>
+        <li><a href="price_checking.php">Price Checking</a></li>
+        <li><a href="Barcode_purchase.php">Barcode purchase</a></li>
         <li><a href="sales.php">Sales</a></li>
-        <li><a href="#">About</a></li>
         <li><a href="logout.php">Log Out</a></li>
     </ul>
 </nav>
@@ -40,11 +77,11 @@ if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
     <label for="description">Description:</label>
     <textarea id="description" name="description"></textarea>
     <label for="Stock">Stock:</label>
-    <input type="number" id="Stock" name="Stock" required> 
+    <input type="number" id="Stock" name="Stock" required>
     <label for="price">Price:</label>
     <input type="number" id="price" name="price" step="0.01" required>
     <button type="submit">Add Product</button>
-    <input type="file" name ="my_image">
+    <input type="file" name="my_image">
 </form>
 <h4>Product List</h4>
 <table>
@@ -60,25 +97,6 @@ if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
     </thead>
     <tbody>
         <?php
-        // Database connection
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "inventory"; // Adjust this to your actual database name
-
-        // Create connection
-        $conn = new mysqli($servername, $username, $password, $dbname);
-
-        // Check connection
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-        
-
-        // Fetch product data
-        $sql = "SELECT id, name, description, Stock, price FROM products";
-        $result = $conn->query($sql);
-
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {
                 echo "<tr>";
@@ -87,7 +105,8 @@ if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
                 echo "<td>".$row['description']."</td>";
                 echo "<td>".$row['Stock']."</td>";
                 echo "<td>".$row['price']."</td>";
-                echo "<td><a href='product.php?id=".$row['id']."' onclick = 'return confirm(\"Are You Sure?\")'>Delete</a></td>";
+                // The delete link with confirmation
+                echo "<td><a href='product_display.php?id=".$row['id']."' onclick='return confirm(\"Are you sure you want to delete this product?\")'>Delete</a></td>";
                 echo "</tr>";
             }
         } else {

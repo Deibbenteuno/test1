@@ -30,15 +30,16 @@ if (isset($_SESSION['id']) && isset($_SESSION['username'])) {
         <h1>Inventory</h1>
 
         <nav class="navbar">
-            <ul>
-                <li><a href="ho.php">Home</a></li>
-                <li><a href="userinfo.php">User Info</a></li>
-                <li><a href="product.php">Product</a></li>
-                <li><a href="sales.php">Sales</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="logout.php">Log Out</a></li> <!-- Log Out button -->
-            </ul>
-        </nav>
+        <ul>
+            <li><a href="ho.php">Home</a></li>
+            <li><a href="userinfo.php">User Info</a></li>
+            <li><a href="product_display.php">Product</a></li>
+            <li><a href="price_checking.php">Price Checking</a></li>
+            <li><a href="Barcode_purchase.php">Barcode purchase</a></li>
+            <li><a href="sales.php">Sales</a></li>
+            <li><a href="logout.php">Log Out</a></li>
+        </ul>
+    </nav>
 
         <main>
             <section class="grid-container">
