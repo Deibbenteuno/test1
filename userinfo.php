@@ -1,30 +1,24 @@
 <?php
-// Start the session to manage user login status
+
 session_start();
-if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'user') {
-    # code...
-    header("location:index.php");
-}
-
-
-// Database credentials
+// 
+// if (!isset($_SESSION['usertype']) || $_SESSION['usertype'] != 'user') {
+//    
+//     header("Location: login.php"); // Replace with your desired page for non-'user' users
+//     exit();
+// }
 $servername = "localhost";
-$username = "root";  // Replace with your MySQL username
-$password = "";      // Replace with your MySQL password
-$dbname = "inventory"; // Name of your database
-
-// Create connection
+$username = "root";  
+$password = "";      
+$dbname = "inventory"; 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check if the connection is successful
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
 
-
-// SQL query to fetch user info
-$sql = "SELECT * FROM user";
+$sql = "SELECT * FROM user WHERE usertype = 'user'";
 $result = $conn->query($sql);
 ?>
 
@@ -44,10 +38,8 @@ $result = $conn->query($sql);
             <li><a href="ho.php">Home</a></li>
             <li><a href="userinfo.php">User Info</a></li>
             <li><a href="product_display.php">Product</a></li>
-            <li><a href="price_checking.php">Price Checking</a></li>
-            <li><a href="Barcode_purchase.php">Barcode purchase</a></li>
-            <li><a href="ter.php">Receipt</a></li>
             <li><a href="sales.php">Sales</a></li>
+            <li><a href="#">About</a></li>
             <li><a href="logout.php">Log Out</a></li>
         </ul>
     </nav>
@@ -58,34 +50,31 @@ $result = $conn->query($sql);
         <thead>
             <tr>
                 <th>ID</th>
-                <th>User Name</th>
-                <th>Usertype</th>
+                <th>User Name</th>               
                 <th>Password</th>
-                
+
             </tr>
         </thead>
         <tbody>
             <?php
-            // Fetch and display the user info if available
+            
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     echo "<tr>";
                     echo "<td>" . $row['id'] . "</td>";
-                    echo "<td>" . $row['username'] . "</td>";
-                    echo "<td>" . $row['usertype'] . "</td>";
-                    // Don't display the real password, show a placeholder
+                    echo "<td>" . $row['username'] . "</td>";                 
                     echo "<td>******</td>";
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='3'>No users found</td></tr>";
+                echo "<tr><td colspan='4'>No users found</td></tr>";
             }
             ?>
         </tbody>
     </table>
 
     <?php
-    // Close the database connection
+    
     $conn->close();
     ?>
 </body>

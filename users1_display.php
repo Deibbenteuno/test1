@@ -1,17 +1,6 @@
 <?php
 session_start(); // Start session for cart management
 
-// Initialize the cart if not already initialized
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
-
-// Check user type and redirect if admin
-if (isset($_SESSION['usertype']) && $_SESSION['usertype'] == 'admin') {
-    header("location:index.php");
-    exit();
-}
-
 // Database connection
 $servername = "localhost";
 $username = "root";
@@ -28,7 +17,12 @@ if ($conn->connect_error) {
 // Handle add to cart
 if (isset($_POST['add_to_cart'])) {
     $product_id = $_POST['product_id'];
-    
+
+    // Check if the cart is already initialized
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+
     // Get product details from the database
     $sql = "SELECT * FROM products WHERE id = $product_id";
     $result = $conn->query($sql);
@@ -36,16 +30,25 @@ if (isset($_POST['add_to_cart'])) {
         $product = $result->fetch_assoc();
 
         // Check if the product is already in the cart
-        if (isset($_SESSION['cart'][$product_id])) {
-            // Increase quantity if already in cart
-            $_SESSION['cart'][$product_id]['Stock']++;
+        // Check if stock is zero
+        if ($product['Stock'] <= 0) {   
+            $_SESSION['error_message'] = "Not enough stock available for {$product['name']}";
+            header("Location: users1_display.php");
+            exit();
+                
         } else {
-            // Add new product to the cart
-            $_SESSION['cart'][$product_id] = [
-                'name' => $product['name'],
-                'price' => $product['price'],
-                'Stock' => 1 // Default quantity 1 when adding to cart
-            ];
+            // Check if the product is already in the cart
+            if (isset($_SESSION['cart'][$product_id])) {
+                // Increase quantity if already in cart
+                $_SESSION['cart'][$product_id]['Stock']++;
+            } else {
+                // Add new product to the cart
+                $_SESSION['cart'][$product_id] = [
+                    'name' => $product['name'],
+                    'price' => $product['price'],
+                    'Stock' => 1 // Default quantity 1 when adding to cart
+                ];
+            }
         }
     }
 
@@ -74,6 +77,37 @@ if (isset($_POST['remove_from_cart'])) {
     exit();
 }
 
+// Handle AJAX request for updating cart quantity
+if (isset($_POST['update_cart'])) {
+    $product_id = $_POST['product_id'];
+    $new_quantity = $_POST['new_quantity'];
+
+    // Update the cart with the new quantity
+    if (isset($_SESSION['cart'][$product_id])) {
+        $_SESSION['cart'][$product_id]['Stock'] = $new_quantity;
+    }
+
+    // Recalculate total bill
+    $_SESSION['total_bill'] = calculateTotalBill();
+
+    // Return updated total bill as JSON response
+    echo json_encode(['total_bill' => number_format($_SESSION['total_bill'], 2)]);
+    exit();
+}
+
+// Handle completing the purchase and clearing the cart
+if (isset($_POST['purchase_product'])) {
+    // Clear the cart
+    unset($_SESSION['cart']);
+    
+    // Clear the total bill
+    unset($_SESSION['total_bill']);
+
+    // Redirect to a purchase confirmation page or home
+    header("Location: ter.php");  // Redirect to purchase complete page
+    exit();
+}
+
 // Function to calculate the total bill
 function calculateTotalBill() {
     global $conn;
@@ -93,71 +127,10 @@ function calculateTotalBill() {
     return $total;
 }
 
-// Insert a new receipt into the database
-if (isset($_POST['purchase_product'])) {
-    $user_id = $_SESSION['id']; // Assuming user_id is stored in the session
-    $total_amount = $_SESSION['total_bill'];
-    $purchase_date = date('Y-m-d H:i:s'); // Current timestamp
-
-    // Insert receipt
-    $sql_receipt = "INSERT INTO receipts (user_id, total_amount, purchase_date) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($sql_receipt);
-    if ($stmt === false) {
-        die('Error preparing the receipt insert query: ' . $conn->error);
-    }
-    $stmt->bind_param("ids", $user_id, $total_amount, $purchase_date);
-    $stmt->execute();
-
-    // Get the last inserted receipt ID
-    $receipt_id = $stmt->insert_id;
-
-    // Insert cart items into the receipt_items table and update product stock
-    foreach ($_SESSION['cart'] as $product_id => $cart_item) {
-        $quantity = $cart_item['Stock'];
-        $price = $cart_item['price'];
-        $total_cost = $quantity * $price;
-
-        // First, check if enough stock is available
-        $sql_check_stock = "SELECT Stock FROM products WHERE id = ?";
-        $stmt_check_stock = $conn->prepare($sql_check_stock);
-        $stmt_check_stock->bind_param("i", $product_id);
-        $stmt_check_stock->execute();
-        $result = $stmt_check_stock->get_result();
-        $product = $result->fetch_assoc();
-
-        if ($product['Stock'] < $quantity) {
-            // If there's not enough stock, we should stop the purchase and show an error
-            echo "<p>Sorry, not enough stock for product: " . $cart_item['name'] . "</p>";
-            exit();
-        }
-
-        // Insert the product into receipt_items table
-        $sql_items = "INSERT INTO receipt_items (receipt_id, product_id, quantity, price, total_cost) VALUES (?, ?, ?, ?, ?)";
-        $stmt_items = $conn->prepare($sql_items);
-        $stmt_items->bind_param("iiidd", $receipt_id, $product_id, $quantity, $price, $total_cost);
-        $stmt_items->execute();
-
-        // Reduce product stock in the products table
-        $sql_update_stock = "UPDATE products SET Stock = Stock - ? WHERE id = ?";
-        $stmt_update_stock = $conn->prepare($sql_update_stock);
-        $stmt_update_stock->bind_param("ii", $quantity, $product_id);
-        $stmt_update_stock->execute();
-    }
-
-    // Clear the cart and reset total bill
-    unset($_SESSION['cart']);
-    $_SESSION['total_bill'] = 0;
-
-    // Redirect to view the receipt on ter.php
-    header("Location: ter.php");
-    exit();
-}
-
 // Fetch products for displaying on the page
 $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -165,6 +138,42 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="pro.css">
     <title>Inventory Management</title>
+    <script>
+        // Update the cart when the quantity changes
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    let productId = this.getAttribute('data-product-id');
+                    let newQuantity = this.value;
+
+                    // Make sure quantity is within valid range
+                    if (newQuantity < 1 || newQuantity > this.max) {
+                        // alert("Quantity must be between 1 and " + this.max);
+                        // return;
+                    }
+
+                    // Update the cart with the new quantity via AJAX
+                    let formData = new FormData();
+                    formData.append('product_id', productId);
+                    formData.append('new_quantity', newQuantity);
+                    formData.append('update_cart', true);
+
+                    fetch('users1_display.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update the total bill on the page
+                        document.getElementById('total-bill').innerHTML = 'Your total bill is: ' + data.total_bill;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                });
+            });
+        });
+    </script>
 </head>
 <body>
 <nav class="navbar">
@@ -176,7 +185,13 @@ $result = $conn->query($sql);
     </ul>
 </nav>  
 
-<!-- Product List and Cart Section -->
+
+<?php
+if (isset($_SESSION['error_message'])) {
+    echo "<div class='error-message'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']); 
+}
+?>
 <h1>Product List</h1>
 <table border="1">
     <thead>
@@ -212,7 +227,6 @@ $result = $conn->query($sql);
     </tbody>
 </table>
 
-<!-- Your Cart Section -->
 <h2>Your Cart</h2>
 <?php
 if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
@@ -244,15 +258,22 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
     }
 
     echo "</tbody></table>";
-    echo "<form action='users1_display.php' method='POST'><button type='submit' name='purchase_product'>Complete Purchase</button></form>";
+    // Complete purchase button
+    echo "<form action='users1.php' method='POST'>
+            <button type='submit' name='purchase_product'>Complete Purchase</button>
+          </form>";
 } else {
     echo "<p>Your cart is empty.</p>";
 }
-
-if (isset($_SESSION['total_bill']) && $_SESSION['total_bill'] != 0) {
-    echo '<p class="total-bill">Your Total Bill is: ₱' . number_format($_SESSION['total_bill'], 0) . '</p>';
-}
 ?>
+
+<p id="total-bill">
+    <?php
+    if (isset($_SESSION['total_bill']) && $_SESSION['total_bill'] != 0) {
+        echo '<p class="total-bill">Your Total Bill is: ₱' . number_format($_SESSION['total_bill'], 0) . '</p>';
+    }
+    ?>
+</p>
 
 <?php
 // Close database connection

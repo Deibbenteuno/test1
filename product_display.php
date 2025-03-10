@@ -42,6 +42,54 @@ if (isset($_GET['id'])) {
     }
 }
 
+if (isset($_POST['Stock'])) {
+    $stock = intval($_POST['Stock']);
+    
+    // Ensure stock is non-negative
+    if ($stock < 0) {
+        $stock = 0; // Set stock to 0 if negative value is provided
+    }
+}
+
+if (isset($_POST['price'])) {
+    $price = floatval($_POST['price']);
+    
+    // Ensure price is non-negative
+    if ($price < 0) {
+        $price = 0; // Set price to 0 if negative value is provided
+    }
+}
+
+// Insert a new product after validation (this assumes you're adding a product)
+if (isset($_POST['add_product'])) {
+    // Sanitize and validate inputs
+    $name = mysqli_real_escape_string($conn, $_POST['name']);
+    $description = mysqli_real_escape_string($conn, $_POST['description']);
+    $stock = intval($_POST['Stock']);
+    $price = floatval($_POST['price']);
+    
+    // Ensure price is non-negative
+    if ($price < 0) {
+        $price = 0; // Default to 0 if negative value is given
+    }
+    
+    // Ensure stock is non-negative
+    if ($stock < 0) {
+        $stock = 0; // Default to 0 if negative value is given
+    }
+    
+    // Perform the insert query
+    $sql = "INSERT INTO products (name, description, Stock, price) 
+            VALUES ('$name', '$description', '$stock', '$price')";
+    
+    if ($conn->query($sql) === TRUE) {
+        header("Location: product_display.php"); // Redirect after successful insert
+        exit();
+    } else {
+        echo "Error: " . $conn->error;
+    }
+}
+
 // Fetch product data
 $sql = "SELECT id, name, description, Stock, price FROM products";
 $result = $conn->query($sql);
@@ -78,9 +126,9 @@ $result = $conn->query($sql);
     <label for="description">Description:</label>
     <textarea id="description" name="description"></textarea>
     <label for="Stock">Stock:</label>
-    <input type="number" id="Stock" name="Stock" required>
+    <input type="number" id="Stock" name="Stock" min="0" required>
     <label for="price">Price:</label>
-    <input type="number" id="price" name="price" step="0.01" required>
+    <input type="number" id="price" name="price" min="0" step="0.01" required>
     <button type="submit">Add Product</button>
     <input type="file" name="my_image">
 </form>

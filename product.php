@@ -34,6 +34,15 @@ if (isset($_GET['id'])) {
     $stmt->close();
 }
 
+if (isset($_POST['Stock'])) {
+    $stock = intval($_POST['Stock']);
+    
+    // Ensure stock is non-negative
+    if ($stock < 0) {
+        $stock = 0; // Set stock to 0 if negative value is provided
+    }
+}
+
 // Handle product addition via POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_product'])) {
     $name = $_POST['name'];
