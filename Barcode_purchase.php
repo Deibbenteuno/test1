@@ -222,21 +222,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         <li><a href="product_display.php">Product</a></li>
         <li><a href="price_checking.php">Price_Checking</a></li>
         <li><a href="Barcode_purchase.php">Barcode_Purchase</a></li>
+        <?php
+if ($_SESSION['usertype'] == 'admin') {
+    echo '<a href="ter.php?view_receipts=1" class="view-receipts-button">
+            <button type="button">View User Receipts</button>
+          </a>';
+}
+?>
         <li><a href="sales.php">Sales</a></li>
         <li><a href="logout.php">Log Out</a></li>
     </ul>
 </nav>
 
 <?php
-
-if ($_SESSION['usertype'] == 'admin') {
-    echo '<a href="ter.php?view_receipts=1" class="view-receipts-button">
-            <button type="button">View User Receipts</button>
-          </a>';
+if (isset($_SESSION['error_message'])) {
+    echo "<div class='error-message'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']); // Clear the error message after displaying it
 }
-
-
 ?>
+
 
 
 <form action="" method="POST">
