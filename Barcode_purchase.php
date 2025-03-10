@@ -195,10 +195,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         <li><a href="Barcode_purchase.php">Barcode Purchase</a></li>
         <li><a href="ter.php">Receipt</a></li>
         <li><a href="sales.php">Sales</a></li>
-        <li><a href="#">About</a></li>
         <li><a href="logout.php">Log Out</a></li>
     </ul>
 </nav>
+
+<?php
+if ($_SESSION['usertype'] == 'admin') {
+    echo '<a href="ter.php?view_receipts=1" class="view-receipts-button">
+            <button type="button">View User Receipts</button>
+          </a>';
+}
+
+
+?>
 
 <form action="" method="POST">
     <label for="barcode">Scan your barcode:</label>
