@@ -35,17 +35,25 @@ if (isset($_POST['add_to_cart'])) {
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
 
-        // Check if the product is already in the cart
-        if (isset($_SESSION['cart'][$product_id])) {
-            // Increase quantity if already in cart
-            $_SESSION['cart'][$product_id]['Stock']++;
+        // Check if stock is zero
+        if ($product['Stock'] <= 0) {   
+            $_SESSION['error_message'] = "Not enough stock available for {$product['name']}";
+            header("Location: users1_display.php");
+            exit();
+                
         } else {
-            // Add new product to the cart
-            $_SESSION['cart'][$product_id] = [
-                'name' => $product['name'],
-                'price' => $product['price'],
-                'Stock' => 1 // Default quantity 1 when adding to cart
-            ];
+            // Check if the product is already in the cart
+            if (isset($_SESSION['cart'][$product_id])) {
+                // Increase quantity if already in cart
+                $_SESSION['cart'][$product_id]['Stock']++;
+            } else {
+                // Add new product to the cart
+                $_SESSION['cart'][$product_id] = [
+                    'name' => $product['name'],
+                    'price' => $product['price'],
+                    'Stock' => 1 // Default quantity 1 when adding to cart
+                ];
+            }
         }
     }
 
@@ -73,6 +81,35 @@ if (isset($_POST['remove_from_cart'])) {
     header("Location: users1_display.php");
     exit();
 }
+
+if (isset($_POST['update_cart'])) {
+    $product_id = $_POST['product_id'];
+    $new_quantity = $_POST['new_quantity'];
+
+    // Update the cart with the new quantity
+    if (isset($_SESSION['cart'][$product_id])) {
+        $_SESSION['cart'][$product_id]['Stock'] = $new_quantity;
+    }
+
+    // Recalculate total bill
+    $_SESSION['total_bill'] = calculateTotalBill();
+
+    // Return updated total bill as JSON response
+    echo json_encode(['total_bill' => number_format($_SESSION['total_bill'], 2)]);
+    exit();
+}
+// Handle completing the purchase and clearing the cart
+if (isset($_POST['purchase_product'])) {
+    // Clear the cart
+    unset($_SESSION['cart']);
+    
+    // Clear the total bill
+    unset($_SESSION['total_bill']);
+
+    // Redirect to a purchase confirmation page or home
+    header("Location: ter.php");  // Redirect to purchase complete page
+    exit();
+} 
 
 // Function to calculate the total bill
 function calculateTotalBill() {
@@ -176,6 +213,13 @@ $result = $conn->query($sql);
     </ul>
 </nav>  
 
+<?php
+if (isset($_SESSION['error_message'])) {
+    echo "<div class='error-message'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']); 
+}
+?>
+
 <!-- Product List and Cart Section -->
 <h1>Product List</h1>
 <table border="1">
@@ -260,3 +304,5 @@ $conn->close();
 ?>
 </body>
 </html>
+
+

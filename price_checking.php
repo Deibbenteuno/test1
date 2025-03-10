@@ -48,6 +48,12 @@ if ($conn->connect_error) {
             <li><a href="logout.php">Log Out</a></li>
         </ul>
     </nav>
+    <?php
+if (isset($_SESSION['error_message'])) {
+    echo "<div class='error-message'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']); // Clear the error message after displaying it
+}
+?>
 
     <form action="" method="POST">
         <label for="barcode">Scan your barcode:</label>
@@ -95,7 +101,9 @@ if ($conn->connect_error) {
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='3'>Item not found with barcode: $barcode</td></tr>";
+                            $_SESSION['error_message'] = "Product not found! $barcode" ;
+                            header("Location: price_checking.php");
+                            exit();
                         }
 
                         $stmt->close();

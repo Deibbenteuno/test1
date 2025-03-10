@@ -2,10 +2,10 @@
 session_start();
 
 // Check if user is logged in and the usertype exists
-if (!isset($_SESSION['username']) || !isset($_SESSION['usertype'])) {
-    header("Location: index.php?error=You must log in first");
-    exit();
-}
+// if (!isset($_SESSION['username']) || !isset($_SESSION['usertype'])) {
+//     header("Location: index.php?error=You must log in first");
+//     exit();
+// }
 
 // Database connection
 $servername = "localhost";
@@ -30,7 +30,10 @@ function calculateTotalBill() {
         foreach ($_SESSION['cart'] as $product_id => $cart_item) {
             // Get the price of the product
             $price = $cart_item['price'];
-            $quantity = $cart_item['stock'];
+            $quantity = $cart_item['Stock'];
+
+            // Debug: Check if the values are being fetched correctly
+            echo "Product ID: $product_id | Price: $price | Quantity: $quantity<br>";
 
             // Calculate the total price for this product (price * quantity)
             $total += $price * $quantity;
@@ -51,29 +54,30 @@ if (isset($_POST['barcode'])) {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // Barcode exists, add to cart
         $product = $result->fetch_assoc();
 
-        // Check if product already exists in the cart
-        if (!isset($_SESSION['cart'][$product['id']])) {
-            // Add to cart
-            $_SESSION['cart'][$product['id']] = [
-                'name' => $product['name'],
-                'price' => $product['price'],
-                'stock' => 1 // Default quantity
-            ];
+        if ($product['Stock'] <= 0) {   
+            $_SESSION['error_message'] = "Not enough stock available for {$product['name']}";
+            header("Location: Barcode_purchase.php");
+            exit();
         } else {
-            // Update existing product quantity if needed
-            $_SESSION['cart'][$product['id']]['stock']++;
+            if (!isset($_SESSION['cart'][$product['id']])) {
+                $_SESSION['cart'][$product['id']] = [
+                    'name' => $product['name'],
+                    'price' => $product['price'],
+                    'Stock' => 1
+                ];
+            } else {
+                $_SESSION['cart'][$product['id']]['Stock']++;
+            }
         }
     } else {
-        echo "<p>Product not found!</p>";
+        $_SESSION['error_message'] = "Product not found!";
+        header("Location: Barcode_purchase.php");
+        exit();
     }
 
-    // Update total bill
     $_SESSION['total_bill'] = calculateTotalBill();
-
-    // Redirect to avoid form resubmission on refresh
     header("Location: Barcode_purchase.php");
     exit();
 }
@@ -92,6 +96,19 @@ if (isset($_POST['remove_from_cart'])) {
 
     // Redirect to avoid form resubmission on refresh
     header("Location: Barcode_purchase.php");
+    exit();
+}
+// Handle quantity update in the cart using POST
+if (isset($_POST['quantity'])) {
+    foreach ($_POST['quantity'] as $product_id => $quantity) {
+        if ($quantity > 0) {
+            $_SESSION['cart'][$product_id]['Stock'] = $quantity;
+        }
+    }
+
+    // Update total bill after quantity changes
+    $_SESSION['total_bill'] = calculateTotalBill();
+    header("Location: barcode_purchase.php");
     exit();
 }
 
@@ -117,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
 
             // Insert cart items into the receipt_items table and update product stock
             foreach ($_SESSION['cart'] as $product_id => $cart_item) {
-                $quantity = $cart_item['stock'];
+                $quantity = $cart_item['Stock'];
                 $price = $cart_item['price'];
                 $total_cost = $quantity * $price;
 
@@ -184,6 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="pro.css">
     <title>Barcode Purchase</title>
+    <h1>Inventory</h1>
 </head>
 <body>
 <nav class="navbar">
@@ -199,7 +217,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         <li><a href="logout.php">Log Out</a></li>
     </ul>
 </nav>
+<?php
+if (isset($_SESSION['error_message'])) {
+    echo "<div class='error-message'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']); // Clear the error message after displaying it
+}
+?>
 
+<br>
 <form action="" method="POST">
     <label for="barcode">Scan your barcode:</label>
     <input type="text" name="barcode" id="barcode" required>
@@ -210,11 +235,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
 <?php
 if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
     echo "<table border='1'>";
-    echo "<thead><tr><th>Product Name</th><th>Stock</th><th>Quantity</th><th>Action</th></tr></thead>";
+    echo "<thead><tr><th>Product Name</th><th>Price</th><th>Quantity</th><th>Action</th></tr></thead>";
     echo "<tbody>";
 
     foreach ($_SESSION['cart'] as $product_id => $cart_item) {
-        $stmt = $conn->prepare("SELECT id, name, price, stock FROM products WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id, name, price, Stock FROM products WHERE id = ?");
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -224,9 +249,9 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
 
             echo "<tr>";
             echo "<td>" . $product['name'] . "</td>";
-            echo "<td>" . $product['stock'] . "</td>";
+            echo "<td>" . $product['price'] . "</td>";
             echo "<td>
-                    <input type='number' class='quantity-input' data-product-id='" . $product['id'] . "' value='" . $cart_item['stock'] . "' min='1' max='" . $product['stock'] . "'>
+                    <input type='number' class='quantity-input' data-product-id='" . $product['id'] . "' value='" . $cart_item['Stock'] . "' min='1' max='" . $product['Stock'] . "'>
                   </td>";
             echo "<td>
                     <form action='Barcode_purchase.php' method='POST'>
@@ -254,3 +279,5 @@ if (isset($_SESSION['total_bill']) && $_SESSION['total_bill'] != 0) {
 // Close the database connection after all actions are complete
 $conn->close();
 ?>
+
+
