@@ -49,12 +49,7 @@ $result_receipts = $stmt_receipts->get_result();
 </head>
 <body>
 <nav class="navbar">
-    <ul>
-            <li><a href="users.php">Home</a></li>
-            <li><a href="users1_display.php">Cart</a></li>
-            <li><a href="ter.php">Receipt</a></li>
-            <li><a href="logout.php">Log Out</a></li>
-    </ul>
+<?php include_once('header.php'); ?>
 </nav>
 
 <h2>Purchase History</h2>

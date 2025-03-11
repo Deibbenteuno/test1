@@ -117,10 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         // Start a transaction for database consistency
         $conn->begin_transaction();
 
-        // Insert the new receipt into the receipts table
-        $sql_receipt = "INSERT INTO receipts (total_amount) VALUES (0)"; // Initially 0, to be updated later
-        if ($conn->query($sql_receipt) === TRUE) {
-            $receipt_id = $conn->insert_id; // Get the ID of the new receipt
+        
 
             foreach ($_SESSION['cart'] as $product_id => $cart_item) {
                 $purchase_Stock = $cart_item['Stock']; // Use the quantity from the cart
@@ -232,27 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
     }    
 
 
-            // If purchase is successful, commit the transaction and clear cart
-            if ($purchase_success) {
-                // Update the total amount for the receipt
-                $sql_update_receipt = "UPDATE receipts SET total_amount = $total_amount WHERE id = $receipt_id";
-                $conn->query($sql_update_receipt);
-
-                // Commit the transaction
-                $conn->commit();
-
-                // Clear cart after purchase
-                unset($_SESSION['cart']);
-                unset($_SESSION['total_bill']); // Reset total bill after purchase
-
-                // Redirect to the receipt page (ter.php) after purchase
-                header("Location: ter.php");
-                exit(); // Ensure no further code execution after redirect
-            } else {
-                $conn->rollback(); // Rollback the transaction if any error occurs
-                echo "There was an error completing the purchase. Please try again.";
-            }
-        } 
+       
+        
 ?>
 
 <!DOCTYPE html>
@@ -285,22 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
 </head>
 <body>
 <nav class="navbar">
-    <ul>
-        <li><a href="ho.php">Home</a></li>
-        <li><a href="userinfo.php">User Info</a></li>
-        <li><a href="product_display.php">Product</a></li>
-        <li><a href="price_checking.php">Price_Checking</a></li>
-        <li><a href="Barcode_purchase.php">Barcode_Purchase</a></li>
-        <?php
-if ($_SESSION['usertype'] == 'admin') {
-    echo '<a href="ter.php?view_receipts=1" class="view-receipts-button">
-            <button type="button">View User Receipts</button>
-          </a>';
-}
-?>
-        <li><a href="sales.php">Sales</a></li>
-        <li><a href="logout.php">Log Out</a></li>
-    </ul>
+<?php include_once('header.php') ?>
 </nav>
 
 

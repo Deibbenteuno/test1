@@ -106,16 +106,7 @@ $result = $conn->query($sql);
 <body>
 <h1>Inventory</h1>
 <nav class="navbar">
-    <ul>
-        <li><a href="ho.php">Home</a></li>
-        <li><a href="userinfo.php">User Info</a></li>
-        <li><a href="product_display.php">Product</a></li>
-        <li><a href="price_checking.php">Price Checking</a></li>
-        <li><a href="Barcode_purchase.php">Barcode purchase</a></li>
-        <li><a href="ter.php">Receipt</a></li>
-        <li><a href="sales.php">Sales</a></li>
-        <li><a href="logout.php">Log Out</a></li>
-    </ul>
+<?php include_once('header.php') ?>
 </nav>
 <h2>Product Inventory Management</h2>
 <h3>Add New Product</h3>

@@ -28,12 +28,7 @@ $all_products = $conn->query($sql);
 <body>
 <h1>Tindahan</h1>
 <nav class="navbar">
-        <ul>
-            <li><a href="users.php">Home</a></li>
-            <li><a href="users1_display.php">Cart</a></li>
-            <li><a href="ter.php">Receipt</a></li>
-            <li><a href="logout.php">Log Out</a></li>
-        </ul>
+        <?php include_once('header.php'); ?>
 </nav> 
 
 <main>
@@ -55,7 +50,7 @@ $all_products = $conn->query($sql);
         </div>
 
         <!-- Form for "Add to Cart" -->
-        <form action="users1.php" method="POST">
+        <form action="users1_display.php" method="POST">
     <input type="hidden" name="product_id" value="<?php echo $row['id']; ?>"> <!-- Correct product ID -->
     <button type="submit" name="add_to_cart">Add to Cart</button>
 </form>

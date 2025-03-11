@@ -306,23 +306,33 @@ table {
     margin: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
 }
+    
 .receipt-box {
-    display: inline-block;
+     display: inline-block;
     margin-top: 10px;
-    padding: 8px 16px;
+}
+    
+.receipt-box a {
+    display: inline-block;
+    padding: 10px 20px;
     background-color: #007BFF;
     color: white;
     text-decoration: none;
     border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+    cursor: pointer;
 }
-.receipt-box:hover {
-    background-color: #0056b3;
+    
+.receipt-box a:hover {
+background-color: #0056b3;
 }
-.receipt-btn:active {
-    transform: translateY(1px);  /* Moves the button slightly down on click */
+  
+.receipt-box a:active {
+transform: translateY(2px); /* Adds a press-down effect */
 }
+    
 
 
  /* Styling for the Total Bill */
