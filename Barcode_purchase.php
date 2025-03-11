@@ -292,9 +292,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         <li><a href="price_checking.php">Price_Checking</a></li>
         <li><a href="Barcode_purchase.php">Barcode_Purchase</a></li>
         <?php
-        if ($_SESSION['usertype'] == 'admin') {
-    echo '<li><a href="ter.php"> View User Receipts
-          </a></li>';
+if ($_SESSION['usertype'] == 'admin') {
+    echo '<a href="ter.php?view_receipts=1" class="view-receipts-button">
+            <button type="button">View User Receipts</button>
+          </a>';
 }
 ?>
         <li><a href="sales.php">Sales</a></li>
@@ -310,6 +311,8 @@ if (isset($_SESSION['error_message'])) {
     unset($_SESSION['error_message']); // Clear the error message after displaying it
 }
 ?>
+
+
 
 <form action="" method="POST">
     <label for="barcode">Scan your barcode:</label>
