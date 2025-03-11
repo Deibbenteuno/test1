@@ -28,7 +28,6 @@ if ($conn->connect_error) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Price Checking</title>
     <link rel="stylesheet" href="pro.css">
-    <h1>Product List</h1>
     <script>
         window.onload = function() {
             document.getElementById('barcode').focus();

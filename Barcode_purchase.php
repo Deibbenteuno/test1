@@ -236,7 +236,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <h1>Product List</h1>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="pro.css">

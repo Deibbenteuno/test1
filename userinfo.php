@@ -31,7 +31,6 @@ $result = $conn->query($sql);
     <title>User Info</title>
 </head>
 <body>
-    <h1>Inventory</h1>
 
     <nav class="navbar">
     <?php include_once('header.php') ?>

@@ -103,3 +103,6 @@ main .card button:hover::after{
     float: left ;
     text-align: center;
 }
+.navbar a:hover {
+    text-decoration: underline;
+}

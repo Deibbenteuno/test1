@@ -25,9 +25,6 @@ if (isset($_SESSION['id']) && isset($_SESSION['username'])) {
         <link rel="stylesheet" type="text/css" href="iba.css">
     </head>
     <body>
-        <div class="greeting">Hi, <?php echo htmlspecialchars($username); ?>!</div>
-
-        <h1>Inventory</h1>
 
         <nav class="navbar">
         <?php include_once('header.php') ?>

@@ -67,8 +67,6 @@ function formatProductId($productId) {
     <title>Inventory</title>
 </head>
 <body>
-
-<h1>Inventory</h1>
 <nav class="navbar">
 <?php include_once('header.php') ?>
     </nav>
