@@ -158,6 +158,79 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
                     break;
                 }
             }
+            try {
+                // Insert a new receipt into the database
+                $user_id = $_SESSION['id']; // Assuming user_id is stored in the session
+                $total_amount = $_SESSION['total_bill'];
+                $purchase_date = date('Y-m-d H:i:s'); // Current timestamp
+    
+                $sql_receipt = "INSERT INTO receipts (user_id, total_amount, purchase_date) VALUES (?, ?, ?)";
+                $stmt = $conn->prepare($sql_receipt);
+                $stmt->bind_param("ids", $user_id, $total_amount, $purchase_date);
+                $stmt->execute();
+    
+                // Get the last inserted receipt ID
+                $receipt_id = $stmt->insert_id;
+    
+                // Insert cart items into the receipt_items table and update product stock
+                foreach ($_SESSION['cart'] as $product_id => $cart_item) {
+                    $quantity = $cart_item['stock'];
+                    $price = $cart_item['price'];
+                    $total_cost = $quantity * $price;
+    
+                    // First, check if enough stock is available
+                    $sql_check_stock = "SELECT stock FROM products WHERE id = ?";
+                    $stmt_check_stock = $conn->prepare($sql_check_stock);
+                    $stmt_check_stock->bind_param("i", $product_id);
+                    $stmt_check_stock->execute();
+                    $result = $stmt_check_stock->get_result();
+                    $product = $result->fetch_assoc();
+    
+                    if ($product['stock'] < $quantity) {
+                        // If there's not enough stock, we should stop the purchase and show an error
+                        echo "<p>Sorry, not enough stock for product: " . $cart_item['name'] . "</p>";
+                        exit();
+                    }
+    
+                    // Insert the product into receipt_items table
+                    $sql_items = "INSERT INTO receipt_items (receipt_id, product_id, quantity, price, total_cost) VALUES (?, ?, ?, ?, ?)";
+                    $stmt_items = $conn->prepare($sql_items);
+                    $stmt_items->bind_param("iiidd", $receipt_id, $product_id, $quantity, $price, $total_cost);
+                    $stmt_items->execute();
+    
+                    // Reduce product stock in the products table
+                    $sql_update_stock = "UPDATE products SET stock = stock - ? WHERE id = ?";
+                    $stmt_update_stock = $conn->prepare($sql_update_stock);
+                    $stmt_update_stock->bind_param("ii", $quantity, $product_id);
+                    $stmt_update_stock->execute();
+                }
+    
+                // Commit the transaction if everything is successful
+                $conn->commit();
+    
+                // Clear the cart after successful purchase
+                unset($_SESSION['cart']);
+                unset($_SESSION['total_bill']);
+    
+                // Check if the user is admin
+                if ($_SESSION['usertype'] == 'admin') {
+                    // Redirect to ter.php directly
+                    header("Location: ter.php");
+                    exit();
+                } else {
+                    // Redirect to another page if the user is not admin (optional, you can handle this as needed)
+                    echo "<p>You don't have access to this page. Redirecting to homepage...</p>";
+                    header("Location: ho.php");
+                    exit();
+                }
+            } catch (Exception $e) {
+                // Rollback the transaction in case of an error
+                $conn->rollback();
+                echo "<p>Error: " . $e->getMessage() . "</p>";
+            }
+        }
+    }    
+
 
             // If purchase is successful, commit the transaction and clear cart
             if ($purchase_success) {
@@ -179,11 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
                 $conn->rollback(); // Rollback the transaction if any error occurs
                 echo "There was an error completing the purchase. Please try again.";
             }
-        } else {
-            echo "Error creating receipt: " . $conn->error;
-        }
-    }
-}
+        } 
 ?>
 
 <!DOCTYPE html>
@@ -222,22 +291,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['purchase_product'])) {
         <li><a href="product_display.php">Product</a></li>
         <li><a href="price_checking.php">Price_Checking</a></li>
         <li><a href="Barcode_purchase.php">Barcode_Purchase</a></li>
+        <?php
+        if ($_SESSION['usertype'] == 'admin') {
+    echo '<li><a href="ter.php"> View User Receipts
+          </a></li>';
+}
+?>
         <li><a href="sales.php">Sales</a></li>
         <li><a href="logout.php">Log Out</a></li>
     </ul>
 </nav>
 
+
+
 <?php
-
-if ($_SESSION['usertype'] == 'admin') {
-    echo '<a href="ter.php?view_receipts=1" class="view-receipts-button">
-            <button type="button">View User Receipts</button>
-          </a>';
+if (isset($_SESSION['error_message'])) {
+    echo "<div class='error-message'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']); // Clear the error message after displaying it
 }
-
-
 ?>
-
 
 <form action="" method="POST">
     <label for="barcode">Scan your barcode:</label>
