@@ -79,12 +79,13 @@ if (isset($stmt_receipts)) {
             <p><strong>Purchase Date:</strong> <?php echo $receipt['purchase_date']; ?></p>
             <a href="report.php?id=<?php echo $receipt['id']; ?>" target="_blank">View Receipt</a>
             
-            <?php if ($user_type == 'admin' || $receipt['user_id'] == $user_id): ?>
-                <a href="?single_receipt_id=<?php echo $receipt['id']; ?>">View Only This Receipt</a>
-                <?php if ($user_type == 'admin' || $receipt['user_id'] == $user_id): ?>
+            
+                
+                <?php if ($user_type == 'user' || $receipt['user_id'] == $user_id): ?>
+                    <a href="?single_receipt_id=<?php echo $receipt['id']; ?>">View Only This Receipt</a>
                     <a href="?filter=all">View All Receipts</a>
                 <?php endif; ?>
-            <?php endif; ?>
+           
         </div>
 
         <?php
