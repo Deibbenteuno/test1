@@ -22,7 +22,7 @@ if (isset($_SESSION['id']) && isset($_SESSION['username'])) {
 <html>
     <head>
         <title>HOME</title>
-        <link rel="stylesheet" type="text/css" href="iba.css">
+        <link rel="stylesheet" type="text/css" href="pro.css">
     </head>
     <body>
 

@@ -128,7 +128,7 @@ if (isset($_POST['purchase_product'])) {
         unset($_SESSION['cart']);
         $_SESSION['total_bill'] = 0;
         
-        header("Location: ter.php");
+        header("Location: ter.php?single_receipt_id=" . $receipt_id);
         exit();
     }
 }

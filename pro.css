@@ -330,7 +330,7 @@ background-color: #0056b3;
 }
   
 .receipt-box a:active {
-transform: translateY(2px); /* Adds a press-down effect */
+transform: translateY(2px); 
 }
     
 
@@ -342,8 +342,8 @@ p.total-bill {
     font-size: 16px;
     font-weight: bold;
     color: #000000;
-    background-color: #ffffff;  /* Blue background */
-    border: 2px solid #000000;  /* Darker blue border */
+    background-color: #ffffff; 
+    border: 2px solid #000000;  
     border-radius: 8px;
     text-align: center;
     text-decoration: none;
